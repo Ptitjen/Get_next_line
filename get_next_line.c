@@ -12,99 +12,69 @@
 
 #include"get_next_line.h"
 
-static int	g_trigger = 0;
-static char	g_buf [BUFFER_SIZE + 1];
-static char	*g_line = NULL;
-static int	g_r = -1;
-static int	g_start = 0;
-
-static int	ft_charge_buffer(int fd)
-{
-	int	l;
-
-	l = read(fd, g_buf, BUFFER_SIZE);
-	if (l == -1)
-		return (-1);
-	g_buf[l] = '\0';
-	if (g_trigger == 1)
-		g_trigger = 0;
-	return (l);
-}
-
-static int	ft_trigger_or_charge(int fd, int choice)
-{
-	if (choice == 1)
-	{
-		if (g_trigger == 0)
-		{
-			g_r = ft_charge_buffer(fd);
-			if (g_r == -1)
-				return (-1);
-			g_trigger = 1;
-			return (0);
-		}
-		else if (g_trigger == 1)
-		{
-			g_line = NULL;
-			return (g_start);
-		}
-		if (g_trigger == 2)
-			return (-1);
-		return (0);
-	}
-	else
-	{
-		g_r = ft_charge_buffer(fd);
-		return (0);
-	}
-}
-
-static int	ft_eol_eof(int i)
-{
-	if ((g_buf[i] == '\0' && i < BUFFER_SIZE))
-		g_trigger = 2;
-	if (g_buf[i] == '\n')
-		g_trigger = 1;
-	g_line = ft_strjoin(g_line, g_buf[i]);
-	g_start = i + 1;
-	i = 0;
-	return (i);
-}
-
-static int	ft_find_next_nl(int i)
-{
-	while (g_buf[i] != '\n' && g_buf[i] != '\0')
-	{
-		g_line = ft_strjoin(g_line, g_buf[i]);
-		i ++;
-	}
-	return (i);
-}
-
 char	*get_next_line(int fd)
 {
 	int	i;
+	static char	*line = NULL;
+	static t_buf buffer;
 
 	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
-	i = ft_trigger_or_charge(fd, 1);
-	while ((g_r > 0 && i != -1) || (fd == 0 && i != -1))
+	i = 0;
+	if (buffer.trigger == 0)
 	{
-		while (g_buf[i] != '\0')
+		buffer.r = read(fd, buffer.buf, BUFFER_SIZE);
+		if (buffer.r == -1)
+			return (NULL);
+		buffer.buf[buffer.r] = '\0';
+		if (buffer.r == -1)
+			i = -1;
+		buffer.trigger = 1;
+	}
+	else if (buffer.trigger == 1)
+	{
+		line = NULL;
+		i = buffer.start;
+	}
+	if (buffer.trigger == 2)
+		i = - 1;
+	if (fd == 0 && i == -1)
+		return (NULL);
+	while ((buffer.r > 0 && i != -1))
+	{
+		while (buffer.buf[i] != '\0')
 		{
-			i = ft_find_next_nl(i);
-			if (g_buf[i] == '\0' && i == BUFFER_SIZE)
-				i = ft_trigger_or_charge(fd, 2);
+			while (buffer.buf[i] != '\n' && buffer.buf[i] != '\0')
+			{
+				line = ft_strjoin(line, buffer.buf[i]);
+				i ++;
+			}
+			if (buffer.buf[i] == '\0' && i == BUFFER_SIZE)
+			{
+				buffer.r = read(fd, buffer.buf, BUFFER_SIZE);
+				if (buffer.r == -1)
+					return (NULL);
+				buffer.buf[buffer.r] = '\0';
+				if (buffer.trigger == 1)
+					buffer.trigger = 0;
+				i = 0;
+			}
 			else
 			{
-				i = ft_eol_eof(i);
-				return (g_line);
+				if ((buffer.buf[i] == '\0' && i < BUFFER_SIZE))
+					buffer.trigger = 2;
+				if (buffer.buf[i] == '\n')
+					buffer.trigger = 1;
+				line = ft_strjoin(line, buffer.buf[i]);
+				buffer.start = i + 1;
+				i = 0;
+				return (line);
 			}
 		}
-		g_start = i;
-		g_trigger = 0;
-		if (g_line != NULL)
-			return (g_line);
+		buffer.start = i;
+		buffer.trigger = 0;
+		if (line != NULL)
+			return (line);
 		return (get_next_line(fd));
 	}
 	return (NULL);

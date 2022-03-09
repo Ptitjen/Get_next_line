@@ -23,4 +23,13 @@ char	*get_next_line(int fd);
 int		ft_strlen(char *str);
 char	*ft_strjoin(char *s1, char c);
 
+typedef struct s_buf
+{
+	char	buf[BUFFER_SIZE + 1];
+	int		r;
+	int		trigger;
+	int 	start;
+
+}	t_buf;
+
 #endif
