@@ -11,9 +11,8 @@
 /* ************************************************************************** */
 
 #include"get_next_line.h"
-#include<stdio.h>
 
-static int	g_trigger = 0; // 0 : charger buf / 1 : buf OK / 2 : EOF
+static int	g_trigger = 0;
 static char	g_buf [BUFFER_SIZE + 1];
 static char	*g_line = NULL;
 static int	g_r = -1;
@@ -32,7 +31,6 @@ static int	ft_charge_buffer(int fd)
 	return (l);
 }
 
-//renvoie -1 si EOF ou erreur lecture / charge nouveau buf SB (2)
 static int	ft_trigger_or_charge(int fd, int choice)
 {
 	if (choice == 1)
@@ -61,7 +59,6 @@ static int	ft_trigger_or_charge(int fd, int choice)
 	}
 }
 
-//fin fichier dans ce buf
 static int	ft_eol_eof(int i)
 {
 	if ((g_buf[i] == '\0' && i < BUFFER_SIZE))
@@ -74,7 +71,6 @@ static int	ft_eol_eof(int i)
 	return (i);
 }
 
-// copie char par char dans line EOB ou jusque prochaine nl
 static int	ft_find_next_nl(int i)
 {
 	while (g_buf[i] != '\n' && g_buf[i] != '\0')
@@ -89,7 +85,7 @@ char	*get_next_line(int fd)
 {
 	int	i;
 
-	if (fd < 0 || fd > 1024)
+	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
 	i = ft_trigger_or_charge(fd, 1);
 	while ((g_r > 0 && i != -1) || (fd == 0 && i != -1))
