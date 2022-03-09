@@ -85,13 +85,14 @@ static int	ft_find_next_nl(int i)
 	return (i);
 }
 
-//mettre bloqueur de mauvais fd?
 char	*get_next_line(int fd)
 {
 	int	i;
 
+	if (fd < 0 || fd > 1024)
+		return (NULL);
 	i = ft_trigger_or_charge(fd, 1);
-	while (g_r != 0 && i != -1)
+	while ((g_r > 0 && i != -1) || (fd == 0 && i != -1))
 	{
 		while (g_buf[i] != '\0')
 		{
