@@ -19,10 +19,8 @@
 # include<sys/stat.h>
 # include<fcntl.h>
 
-
 char	*get_next_line(int fd);
-char	*ft_strncpy(char *src, int index, int end);
-char	*ft_strcat(char *dest, char *src, int len);
-int	ft_strlen(char *str);
+int		ft_strlen(char *str);
+char	*ft_strjoin(char *s1, char c);
 
 #endif

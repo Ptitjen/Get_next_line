@@ -13,107 +13,102 @@
 #include"get_next_line.h"
 #include<stdio.h>
 
-static int trigger = 0; // 0 : il faut charger buf / 1 : buf deja charge / 2 : fin de fichier atteinte
-static char buf [BUFFER_SIZE];
-static char	*line = NULL;
-static int r = -1;
-static int start = 0;
+static int	g_trigger = 0; // 0 : charger buf / 1 : buf OK / 2 : EOF
+static char	g_buf [BUFFER_SIZE + 1];
+static char	*g_line = NULL;
+static int	g_r = -1;
+static int	g_start = 0;
 
-int	ft_charge_buffer(char *buf, int fd)
+static int	ft_charge_buffer(int fd)
 {
-	int		l;
-	
-	l = read(fd, buf, BUFFER_SIZE);
+	int	l;
+
+	l = read(fd, g_buf, BUFFER_SIZE);
 	if (l == -1)
 		return (-1);
-	buf[l] = '\0';
-	if (trigger == 1)
-		trigger = 0;
+	g_buf[l] = '\0';
+	if (g_trigger == 1)
+		g_trigger = 0;
 	return (l);
 }
 
-int	ft_strlen(char *str)
+//renvoie -1 si EOF ou erreur lecture / charge nouveau buf SB (2)
+static int	ft_trigger_or_charge(int fd, int choice)
 {
-	int	i;
-
-	i = 0;
-	if (str == NULL)
-		return (0);
-	while (str[i] != '\0')
-		i ++;
-	return (i);
-}
-
-char	*ft_strjoin(char *s1, char c)
-{
-	int	i;
-	int	lens1;
-	char	*dest;
-
-	i = 0;
-	lens1 = ft_strlen(s1);
-	dest = malloc(sizeof(char) * (lens1 + 2));
-	if (dest == NULL)
-		return (NULL);
-	if (s1 != NULL)
+	if (choice == 1)
 	{
-		while (i < lens1)
+		if (g_trigger == 0)
 		{
-			dest[i] = s1[i];
-			i ++;
+			g_r = ft_charge_buffer(fd);
+			if (g_r == -1)
+				return (-1);
+			g_trigger = 1;
+			return (0);
 		}
-	}
-	dest[i] = c;
-	i ++;
-	dest[i] = '\0';
-	free (s1);
-	return (dest);
-}
-
-char	*get_next_line(int fd)
-{
-	int	i;
-	if (trigger == 0)
-	{
-		r = ft_charge_buffer(buf, fd);
-		if (r ==-1)
-			return (NULL);
-		i = 0;
-		trigger = 1;
+		else if (g_trigger == 1)
+		{
+			g_line = NULL;
+			return (g_start);
+		}
+		if (g_trigger == 2)
+			return (-1);
+		return (0);
 	}
 	else
 	{
-		i = start;
-		line = NULL;
+		g_r = ft_charge_buffer(fd);
+		return (0);
 	}
-	while (r != 0) // fin de fichier
+}
+
+//fin fichier dans ce buf
+static int	ft_eol_eof(int i)
+{
+	if ((g_buf[i] == '\0' && i < BUFFER_SIZE))
+		g_trigger = 2;
+	if (g_buf[i] == '\n')
+		g_trigger = 1;
+	g_line = ft_strjoin(g_line, g_buf[i]);
+	g_start = i + 1;
+	i = 0;
+	return (i);
+}
+
+// copie char par char dans line EOB ou jusque prochaine nl
+static int	ft_find_next_nl(int i)
+{
+	while (g_buf[i] != '\n' && g_buf[i] != '\0')
 	{
-		while (buf[i] != '\0') // fin de buf
+		g_line = ft_strjoin(g_line, g_buf[i]);
+		i ++;
+	}
+	return (i);
+}
+
+//mettre bloqueur de mauvais fd?
+char	*get_next_line(int fd)
+{
+	int	i;
+
+	i = ft_trigger_or_charge(fd, 1);
+	while (g_r != 0 && i != -1)
+	{
+		while (g_buf[i] != '\0')
 		{
-			while (buf[i] != '\n' && buf[i] != '\0') // remplissage line tant que pas \n
+			i = ft_find_next_nl(i);
+			if (g_buf[i] == '\0' && i == BUFFER_SIZE)
+				i = ft_trigger_or_charge(fd, 2);
+			else
 			{
-				line = ft_strjoin(line, buf[i]);
-				i ++;
-			}
-			if (buf[i] == '\0' && i == BUFFER_SIZE)//charger buffer suivant
-			{
-				r = ft_charge_buffer(buf, fd);
-				
-				i = 0;
-			}
-			else if (buf[i] == '\n' || (buf[i] == '\0' && i < BUFFER_SIZE))
-			{
-				line = ft_strjoin(line, buf[i]);
-				trigger = 1;
-				start = i + 1;
-				i = 0;
-				return (line);
+				i = ft_eol_eof(i);
+				return (g_line);
 			}
 		}
-		start = i;
-		trigger = 0;
+		g_start = i;
+		g_trigger = 0;
+		if (g_line != NULL)
+			return (g_line);
 		return (get_next_line(fd));
 	}
-	free (line);
 	return (NULL);
 }
