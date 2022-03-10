@@ -11,71 +11,81 @@
 /* ************************************************************************** */
 
 #include"get_next_line.h"
+#include<stdio.h>
+
+/*static char *ft_charge_buffer(int fd, char *buf)
+{
+	int	r;
+
+	r = read(fd, buf, BUFFER_SIZE);
+
+	if (r == -1 || r == 0)
+		return (NULL);
+	buf[r] = '\0';
+	return (buf);
+}*/
 
 char	*get_next_line(int fd)
 {
-	int	i;
-	static char	*line = NULL;
-	static t_buf buffer;
+	static char	*tmp;
+	char 		*line;
+	static int 	r;
+	char	*next;
 
 	if (fd < 0 || fd > 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
-	i = 0;
-	if (buffer.trigger == 0)
+
+	if (tmp == NULL)
 	{
-		buffer.r = read(fd, buffer.buf, BUFFER_SIZE);
-		if (buffer.r == -1)
-			return (NULL);
-		buffer.buf[buffer.r] = '\0';
-		if (buffer.r == -1)
-			i = -1;
-		buffer.trigger = 1;
-	}
-	else if (buffer.trigger == 1)
-	{
-		line = NULL;
-		i = buffer.start;
-	}
-	if (buffer.trigger == 2)
-		i = - 1;
-	if (fd == 0 && i == -1)
-		return (NULL);
-	while ((buffer.r > 0 && i != -1))
-	{
-		while (buffer.buf[i] != '\0')
+		tmp = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	//	printf("tmp1 : %p", tmp);
+		r = read(fd,tmp, BUFFER_SIZE);
+		if (r == -1 || r == 0)
 		{
-			while (buffer.buf[i] != '\n' && buffer.buf[i] != '\0')
+			free(tmp);
+			tmp = NULL;
+				return (NULL);
+		}
+		tmp[r] = '\0';
+
+	}
+
+	line = ft_fill_line(tmp);
+	
+	tmp = ft_copy_temp(tmp);
+
+	
+	while (r > 0)
+	{
+		if (tmp)
+			return (line);
+		if (tmp == NULL)
+		{
+			
+			if (r > 0)
 			{
-				line = ft_strjoin(line, buffer.buf[i]);
-				i ++;
-			}
-			if (buffer.buf[i] == '\0' && i == BUFFER_SIZE)
-			{
-				buffer.r = read(fd, buffer.buf, BUFFER_SIZE);
-				if (buffer.r == -1)
+				free (tmp);
+				tmp = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+				//printf("tmp2 : %p", tmp);
+				r = read(fd,tmp, BUFFER_SIZE);
+				if (r == -1 )
+				{
+					free(tmp);
+					tmp = NULL;
 					return (NULL);
-				buffer.buf[buffer.r] = '\0';
-				if (buffer.trigger == 1)
-					buffer.trigger = 0;
-				i = 0;
-			}
-			else
-			{
-				if ((buffer.buf[i] == '\0' && i < BUFFER_SIZE))
-					buffer.trigger = 2;
-				if (buffer.buf[i] == '\n')
-					buffer.trigger = 1;
-				line = ft_strjoin(line, buffer.buf[i]);
-				buffer.start = i + 1;
-				i = 0;
-				return (line);
+				}
+				tmp[r] = '\0';
+				next = ft_fill_line(tmp);
+				
+				line = ft_strjoin(line, next);
+				
+				tmp = ft_copy_temp(tmp);
 			}
 		}
-		buffer.start = i;
-		buffer.trigger = 0;
-		if (line != NULL)
-			return (line);
-		return (get_next_line(fd));
 	}
-	return (NULL);
+	//free(tmp);
+	return(line);
 }
+
+
+
