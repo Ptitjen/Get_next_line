@@ -49,14 +49,14 @@ char	*ft_copy_temp(char *str)
 		end[j++] = str[i++];
 	end[j] = '\0';
 	free(str);
-	return (end);	
+	return (end);
 }
 
 char	*ft_fill_line(char *tmp)
 {
-	int	i;
-	char *line;
-	
+	int		i;
+	char	*line;
+
 	i = 0;
 	if (tmp == NULL)
 		return (NULL);
@@ -92,19 +92,20 @@ char	*ft_strcat(char *dest, char *s1, char *s2)
 		i ++;
 	}
 	if (s2 != NULL)
+	{
 		while (s2[j] != '\0')
 		{
 			dest[i] = s2[j];
 			i ++;
 			j ++;
 		}
+	}
 	dest[i] = '\0';
 	return (dest);
 }
 
 char	*ft_strjoin(char *s1, char *s2)
 {
-	
 	char	*dest;
 
 	dest = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));

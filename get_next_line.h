@@ -17,8 +17,8 @@
 # include <unistd.h>
 
 char	*get_next_line(int fd);
-char 	*ft_charge_buffer(int fd, char *buf, char *tmp, char *next);
-int 	ft_is_a_line(char *s);
+char	*ft_charge_buffer(int fd, char *buf, char *tmp, char *next);
+int		ft_is_a_line(char *s);
 size_t	ft_strlen(char *str);
 char	*ft_strjoin(char *s1, char *s2);
 char	*ft_strcat(char *dest, char *s1, char *s2);

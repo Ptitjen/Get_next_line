@@ -12,9 +12,9 @@
 
 #include"get_next_line.h"
 
-int ft_is_a_line(char *s)
+int	ft_is_a_line(char *s)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	if (s == NULL)
@@ -28,7 +28,7 @@ int ft_is_a_line(char *s)
 	return (0);
 }
 
-char *ft_charge_buffer(int fd, char *buf, char *tmp, char *next)
+char	*ft_charge_buffer(int fd, char *buf, char *tmp, char *next)
 {
 	int	r;
 
@@ -51,7 +51,7 @@ char *ft_charge_buffer(int fd, char *buf, char *tmp, char *next)
 		tmp = ft_strjoin(next, buf);
 		free (next);
 		if (ft_is_a_line(tmp) == 1)
-			break;
+			break ;
 	}
 	free (buf);
 	return (tmp);
@@ -60,7 +60,7 @@ char *ft_charge_buffer(int fd, char *buf, char *tmp, char *next)
 char	*get_next_line(int fd)
 {
 	static char	*tmp;
-	char 		*line;
+	char		*line;
 	char		*next;
 	char		*buf;
 
@@ -77,6 +77,3 @@ char	*get_next_line(int fd)
 	tmp = ft_copy_temp(tmp);
 	return (line);
 }
-
-
-
