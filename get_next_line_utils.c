@@ -11,11 +11,10 @@
 /* ************************************************************************** */
 
 #include"get_next_line.h"
-#include<stdio.h>
 
-int	ft_strlen(char *str)
+size_t	ft_strlen(char *str)
 {
-	int	i;
+	size_t	i;
 
 	i = 0;
 	if (str == NULL)
@@ -25,98 +24,93 @@ int	ft_strlen(char *str)
 	return (i);
 }
 
-
-
-char	*ft_copy_temp(char *str) // met a jour le buf temporaire en enlveant le debut jusque NL
+char	*ft_copy_temp(char *str)
 {
-	int	lenstr;
-	int	i;
-	int j;
+	size_t	j;
+	size_t	i;
 	char	*end;
 
-	lenstr = ft_strlen(str);
-	
 	i = 0;
 	j = 0;
-
-	while (str[i] != '\n' && i < lenstr)
+	if (str == NULL)
+		return (NULL);
+	while (str[i] != '\n' && str[i] != '\0')
 		i ++;
-
-	if (i != lenstr)
+	if (i == ft_strlen(str))
 	{
-		i ++;
-		end = malloc(sizeof(char) * (lenstr - i + 1));
-		while (str[i + j] != '\0')
-		{
-			end[j] = str[i + j];
-			j ++;
-		}
-		end [j] = '\0';
+		free(str);
+		return (NULL);
 	}
-	else
-		end = NULL;
+	i ++;
+	end = malloc(sizeof(char) * (ft_strlen(str) - i + 1));
+	if (end == NULL)
+		return (NULL);
+	while (str[i] != '\0')
+		end[j++] = str[i++];
+	end[j] = '\0';
 	free(str);
-	 // pas de \n dedans : tte le buf temp est dans line => charger nouveau buffer
-	return (end);
-	
+	return (end);	
 }
 
-char	*ft_fill_line(char *tmp) // copie jusque NL ou fin du buf -  OK
+char	*ft_fill_line(char *tmp)
 {
 	int	i;
-	int	j;
 	char *line;
 	
 	i = 0;
-	j = 0;
 	if (tmp == NULL)
 		return (NULL);
-	//printf("tmp : %s", tmp);
 	while (tmp[i] != '\n' && tmp[i] != '\0')
 		i ++;
-	line = malloc(sizeof(char) * (i + 1));
-	//printf("line : %p", line);
-	while (j <= i)
+	if (tmp[0] == '\0')
+		return (NULL);
+	line = malloc(sizeof(char) * (i + 2));
+	if (line == NULL)
+		return (NULL);
+	i = 0;
+	while (tmp[i] != '\n' && tmp[i] != '\0')
 	{
-		line[j] = tmp[j];
-		j ++;
+		line[i] = tmp[i];
+		i ++;
 	}
-	if (tmp[j - 1] == '\n')
-		line[j] = '\0';
-
+	if (tmp[i] == '\n')
+		line[i++] = '\n';
+	line[i] = '\0';
 	return (line);
 }
 
-char	*ft_strjoin(char *s1, char *s2)
+char	*ft_strcat(char *dest, char *s1, char *s2)
 {
 	size_t	i;
-	size_t	lens1;
-	size_t	tlen;
-	char	*dest;
+	size_t	j;
 
 	i = 0;
-	lens1 = ft_strlen(s1);
-	tlen = lens1 + ft_strlen(s2) + 1;
-	dest = malloc(sizeof(char) * tlen);
-	//printf("dest : %p", dest);
-	if ((dest == NULL || s1 == NULL) && s2 != NULL)
-		return (NULL);
-	while (i < lens1)
+	j = 0;
+	while (s1[i] != '\0')
 	{
 		dest[i] = s1[i];
 		i ++;
 	}
 	if (s2 != NULL)
-		while (i < tlen - 1)
+		while (s2[j] != '\0')
 		{
-			dest[i] = s2[i - lens1];
+			dest[i] = s2[j];
 			i ++;
+			j ++;
 		}
 	dest[i] = '\0';
+	return (dest);
+}
 
+char	*ft_strjoin(char *s1, char *s2)
+{
 	
-	free(s1);
-	free(s2);
+	char	*dest;
+
+	dest = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
+	if ((dest == NULL || s1 == NULL) && s2 != NULL)
+		return (NULL);
+	dest = ft_strcat(dest, s1, s2);
 	if (dest[0] == '\0')
 	{
 		free (dest);
